@@ -3,7 +3,7 @@
 .RData
 .DS_Store
 /node_modules
-/src/config.json
+/config.json
 /data/*/*/*
 /data/*/*/*/*
 /lib

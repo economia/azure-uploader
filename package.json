@@ -13,5 +13,10 @@
     "async": "~0.2.9",
     "nconf": "~0.6.9",
     "mime": "~1.2.11"
+  },
+  "devDependencies": {
+    "expect.js": "~0.3.1",
+    "LiveScript": "~1.2.0",
+    "mocha": "~1.17.1"
   }
 }
