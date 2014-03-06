@@ -34,43 +34,71 @@ describe "DirScanner" ->
     after ->
         deleteFiles!
 
-    dirScanner = null
-    files = []
-    onFile = -> files.push it
-    test "should initialize" ->
-        dirScanner := new DirScanner dir
-            ..on \file onFile
-            ..ignorePath "subdir/ignore.txt"
-            ..ignoreName new RegExp "^ignore$"
-            ..ignoreName /^\./
+    describe "basic file discovery" ->
+        dirScanner = null
+        files = []
+        test "should initialize" ->
+            dirScanner := new DirScanner dir
+                ..on \file -> files.push it
 
-    test "should scan for files" (done) ->
-        dirScanner.start!
-        <~ dirScanner.on \end
-        done!
+        test "should scan for files" (done) ->
+            dirScanner.start!
+            <~ dirScanner.once \end
+            done!
 
-    test "should find all the files in root directory" ->
-        expect files .to.contain "#dir/1.txt"
-        expect files .to.contain "#dir/2.txt"
-        expect files .to.contain "#dir/3.txt"
+        test "should find all the files in root directory" ->
+            expect files .to.contain "#dir/1.txt"
+            expect files .to.contain "#dir/2.txt"
+            expect files .to.contain "#dir/3.txt"
 
-    test "should not export whole directories" ->
-        expect files .to.not.contain "#dir/subdir"
-        expect files .to.not.contain "#dir/subdir/"
+        test "should not export whole directories" ->
+            expect files .to.not.contain "#dir/subdir"
+            expect files .to.not.contain "#dir/subdir/"
 
-    test "should find files in subdirectories" ->
-        expect files .to.contain "#dir/subdir/1.txt"
-        expect files .to.contain "#dir/subdir/2.txt"
+        test "should find files in subdirectories" ->
+            expect files .to.contain "#dir/subdir/1.txt"
+            expect files .to.contain "#dir/subdir/2.txt"
 
-    test "should not find paths ignored by string" ->
-        expect files .to.not.contain "#dir/subdir/ignore.txt"
+    describe "ignoring paths" ->
+        dirScanner = null
+        files = []
+        before (done) ->
+            dirScanner := new DirScanner dir
+                ..on \file -> files.push it
+                ..ignorePath "subdir/ignore.txt"
+                ..ignorePath /^ignore\//
+                ..start!
+            <~ dirScanner.once \end
+            done!
 
-    test "should not find files and directories ignored by regexp" ->
-        expect files .to.not.contain "#dir/ignore/1.txt"
-        expect files .to.not.contain "#dir/subdir/.doDonUpload.txt"
+        test "should not find paths ignored by string" ->
+            expect files .to.not.contain "#dir/subdir/ignore.txt"
 
-    test "should not mistakenly ignore files" ->
-        expect files .to.contain "#dir/subdir/not-ignore.txt"
+        test "should not find paths ignored by regex" ->
+            expect files .to.not.contain "#dir/ignore/1.txt"
 
+        test "should not mistakenly ignore files" ->
+            expect files .to.contain "#dir/subdir/not-ignore.txt"
+
+    describe "ignoring file/directory names" ->
+        dirScanner = null
+        files = []
+        before (done) ->
+            dirScanner := new DirScanner dir
+                ..on \file -> files.push it
+                ..ignoreName "ignore.txt"
+                ..ignoreName /^\./
+                ..start!
+            <~ dirScanner.once \end
+            done!
+
+        test "should ignore files by string" ->
+            expect files .to.not.contain "#dir/subdir/ignore.txt"
+
+        test "should ignore files by regexp" ->
+            expect files .to.not.contain "#dir/subdir/.doDonUpload.txt"
+
+        test "should not mistakenly ignore files" ->
+            expect files .to.contain "#dir/subdir/not-ignore.txt"
 
 
