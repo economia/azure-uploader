@@ -4,23 +4,46 @@ require! {
     async
     './DirScanner'
     './FileUploader'
-    '../config.json'
+    './utils'
+    prompt
+    commander
 }
+commander
+    .usage '[options] <directory>'
+    .version '0.0.1'
+    .option '-y, --use-config' 'Use config'
+    .option '-a, --upload-all' 'Upload all files (only with -y)'
+    .option '-m, --upload-modified' 'Upload only files modified since last upload (only with -y)'
+    .parse process.argv
+[dir] = commander.args
+commander.help! if not dir
+baseDir = fs.realpathSync dir
+(err, {config, blobService}) <~ utils.get-config baseDir, commander
 
-blobService = azure.createBlobService config.storage_name, config.storage_key
-baseDir = "C:\\www\\volebni-mapy"
 fileUploader = new FileUploader do
     baseDir           : baseDir
-    targetPrefix      : "foo"
-    targetContainer   : "test"
+    targetPrefix      : config.prefix
+    targetContainer   : config.container_name
     blobService       : blobService
-    uploadConcurrency : 40
+    uploadConcurrency : config.concurrency
 
 dirScanner = new DirScanner baseDir
     ..on \file fileUploader~upload
-    ..ignore "node_modules"
-    ..ignore /^\./
-    ..start!
+    ..ignoreName "node_modules"
+    ..ignoreName /^\./
+if config.modified_since
+    dirScanner.newerThan that
+applyIgnores = (method, ignoreArray) ->
+    return unless ignoreArray?length
+    for regexOrString in ignoreArray
+        if typeof! regexOrString == 'Array'
+            method new RegExp ...regexOrString
+        else
+            method regexOrString
+
+applyIgnores dirScanner~ignoreName, config.ignore_name
+applyIgnores dirScanner~ignorePath, config.ignore_path
+dirScanner.start!
 <~ dirScanner.once \end
 <~ fileUploader.once \end
 lastFailCount = +Infinity
