@@ -5,34 +5,49 @@ require! {
 }
 
 module.exports = class DirScanner extends EventEmitter
-    (@dir) ->
-        @ignores = []
+    (@baseDir) ->
+        @ignoredNames = []
+        @ignoredPaths = []
         @filesFound = []
+        @baseDirCharactersToStrip = @baseDir.length
+        if @baseDir[*-1] not in <[ / \\ ]> then @baseDirCharactersToStrip += 1
 
     start: (cb) ->
-        <~ @scandir @dir
+        <~ @scandir @baseDir
         @emit \end
         cb?!
 
-    ignore: (stringOrRegex) ->
-        @ignores.push stringOrRegex
+    ignoreName: (stringOrRegex) ->
+        @ignoredNames.push stringOrRegex
         @
 
-    filterFile: (filename) ->
-        for stringOrRegex in @ignores
+    ignorePath: (stringOrRegex) ->
+        @ignoredPaths.push stringOrRegex
+        @
+
+    filterName: (filename) ->
+        @matchStringOrRegex @ignoredNames, filename
+
+    filterPath: (filepath) ->
+        relativePath = filepath.substr @baseDirCharactersToStrip
+        @matchStringOrRegex @ignoredPaths, relativePath
+
+    matchStringOrRegex: (stringOrRegexArray, testString) ->
+        for stringOrRegex in stringOrRegexArray
             if stringOrRegex.test
-                if stringOrRegex.test filename
+                if stringOrRegex.test testString
                     return false
-            else if filename == stringOrRegex
+            else if testString == stringOrRegex
                 return false
         return true
 
     scandir: (basedir, cb) ->
         (err, contents) <~ fs.readdir basedir
         throw err if err
-        contents .= filter @~filterFile
-        <~ async.each contents, (fileOrDir, cb) ~>
-            path = "#basedir/#fileOrDir"
+        validNames = contents.filter @~filterName
+        paths = validNames.map -> basedir + "/" + it
+        validPaths = paths.filter @~filterPath
+        <~ async.each validPaths, (path, cb) ~>
             (err, stat) <~ fs.stat path
             if stat.isDirectory!
                 (err, subFiles) <~ @scandir path

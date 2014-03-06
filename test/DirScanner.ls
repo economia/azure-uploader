@@ -40,9 +40,9 @@ describe "DirScanner" ->
     test "should initialize" ->
         dirScanner := new DirScanner dir
             ..on \file onFile
-            ..ignore "ignore.txt"
-            ..ignore new RegExp "^ignore$"
-            ..ignore /^\./
+            ..ignorePath "subdir/ignore.txt"
+            ..ignoreName new RegExp "^ignore$"
+            ..ignoreName /^\./
 
     test "should scan for files" (done) ->
         dirScanner.start!
@@ -62,15 +62,15 @@ describe "DirScanner" ->
         expect files .to.contain "#dir/subdir/1.txt"
         expect files .to.contain "#dir/subdir/2.txt"
 
-    test "should not find files ignored by string" ->
+    test "should not find paths ignored by string" ->
         expect files .to.not.contain "#dir/subdir/ignore.txt"
 
-    test "should not find files ignored by regexp" ->
+    test "should not find files and directories ignored by regexp" ->
         expect files .to.not.contain "#dir/ignore/1.txt"
         expect files .to.not.contain "#dir/subdir/.doDonUpload.txt"
 
     test "should not mistakenly ignore files" ->
-        expect files .to.contain "#dir/subdir/1.txt"
+        expect files .to.contain "#dir/subdir/not-ignore.txt"
 
 
 
