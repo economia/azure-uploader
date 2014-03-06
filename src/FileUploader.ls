@@ -12,7 +12,7 @@ module.exports = class FileUploader extends EventEmitter
             ..drain = ~> @emit \end
         @failed = []
         @baseDirCharactersToStrip = @baseDir.length
-        if @baseDir[*-1] != '/' then @baseDirCharactersToStrip += 1
+        if @baseDir[*-1] not in <[ / \\ ]> then @baseDirCharactersToStrip += 1
         @fileCount = @uploaded = 0
         http.globalAgent.maxSockets = @uploadConcurrency
 
