@@ -8,6 +8,7 @@ module.exports = class DirScanner extends EventEmitter
     (@baseDir) ->
         @ignoredNames = []
         @ignoredPaths = []
+        @newerThanDate = null
         @filesFound = []
         @baseDirCharactersToStrip = @baseDir.length
         if @baseDir[*-1] not in <[ / \\ ]> then @baseDirCharactersToStrip += 1
@@ -24,6 +25,8 @@ module.exports = class DirScanner extends EventEmitter
     ignorePath: (stringOrRegex) ->
         @ignoredPaths.push stringOrRegex
         @
+
+    newerThan: (@newerThanDate) ->
 
     filterName: (filename) ->
         @matchStringOrRegex @ignoredNames, filename
@@ -52,8 +55,10 @@ module.exports = class DirScanner extends EventEmitter
             if stat.isDirectory!
                 (err, subFiles) <~ @scandir path
                 cb!
-            else
-                @filesFound.push path
-                @emit \file path
+            else if stat.isFile!
+                dateConstraint = @newerThanDate and @newerThanDate >= stat.mtime
+                unless dateConstraint
+                    @filesFound.push path
+                    @emit \file path
                 cb!
         cb?!

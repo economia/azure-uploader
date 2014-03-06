@@ -101,4 +101,23 @@ describe "DirScanner" ->
         test "should not mistakenly ignore files" ->
             expect files .to.contain "#dir/subdir/not-ignore.txt"
 
+    describe "filtering by last modified date" ->
+        now = new Date!
+        nextMinute = new Date!
+            ..setTime now.getTime! + 60_000
+        nextTwoMinutes = new Date!
+            ..setTime now.getTime! + 120_000
 
+        dirScanner = null
+        files = []
+        before (done) ->
+            fs.utimes "#dir/1.txt", nextTwoMinutes, nextTwoMinutes
+            dirScanner := new DirScanner dir
+                ..on \file -> files.push it
+                ..newerThan nextMinute
+                ..start!
+            <~ dirScanner.once \end
+            done!
+
+        test "should find only files modified after a date" ->
+            expect files .to.eql ["#dir/1.txt"]
