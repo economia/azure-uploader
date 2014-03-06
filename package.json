@@ -1,12 +1,19 @@
 {
   "name": "azure-uploader",
-  "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.0.1",
+  "description": "Tool for multithreaded, recursive uploading and gzipping of all files inside a given directory",
+  "main": "./lib/FileUploader.js",
+  "engines": {
+    "node": "*"
   },
-  "author": "",
+  "bin": {
+    "azure-upload": "./lib/cli.js"
+  },
+  "scripts": {
+    "prepublish": "slake build",
+    "test": "mocha --compilers ls:livescript test"
+  },
+  "author": "Economia a.s.",
   "license": "MIT",
   "dependencies": {
     "azure": "~0.8.0",
@@ -20,5 +27,20 @@
     "expect.js": "~0.3.1",
     "LiveScript": "~1.2.0",
     "mocha": "~1.17.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/economia/azure-uploader.git"
+  },
+  "keywords": [
+    "azure",
+    "blob",
+    "storage",
+    "upload",
+    "multi",
+    "threaded"
+  ],
+  "bugs": {
+    "url": "https://github.com/economia/azure-uploader/issues"
   }
 }
