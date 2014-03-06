@@ -141,6 +141,7 @@ init-cli = (baseDir, cb) ->
         config.ignore_name =
             ["node_modules" "i"]
             ["^\\." ""]
+    config.ignore_path = ["azure-upload-settings.json"]
 
     config.previous_run_date = new Date!toString!
     console.log "Ready to upload directory #{baseDir} to #{targetContainer.name} (#{targetContainer.url}#{prefix_text})."
