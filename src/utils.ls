@@ -139,7 +139,7 @@ init-cli = (baseDir, cb) ->
     (err, {use_default_ignores}) <~ prompt.get [default_ignores_prompt]
     if use_default_ignores.toLowerCase! == 'y'
         config.ignore_name =
-            ["node_modules" "i"]
+            "node_modules"
             ["^\\." ""]
     config.ignore_path = ["azure-upload-settings.json"]
 
