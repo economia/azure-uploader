@@ -1,6 +1,6 @@
 {
   "name": "azure-uploader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Tool for multithreaded, recursive uploading and gzipping of all files inside a given directory",
   "main": "./lib/FileUploader.js",
   "engines": {
