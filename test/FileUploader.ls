@@ -75,6 +75,31 @@ describe "FileUploader" ->
         for file in uncompressible
             expect file.data.toString! .to.eql "uncompressible"
 
+    describe "no target prefix" ->
+        targetPrefix = ""
+        fileUploader    = null
+        uploaded        = []
+        onUpload = (container, targetPath, path, options, cb) ->
+            (err, data) <~ fs.readFile path
+            uploaded.push {container, targetPath, path, options, data}
+            setTimeout cb, 10
+        blobService     = {}
+            ..createBlockBlobFromFile = onUpload
+
+        test "should set correct target filenames" (done) ->
+            fileUploader := new FileUploader {baseDir, targetPrefix, targetContainer, blobService, uploadConcurrency}
+                ..upload compressibleFile
+                ..upload anotherCompressibleFile
+                ..upload uncompressibleFile
+            <~ fileUploader.once \end
+            correctDestinations =
+                "1.html"
+                "1.css"
+                "1.jpg"
+
+            for file in uploaded => expect correctDestinations .to.contain file.targetPath
+            done!
+
     describe "error handling" ->
         uploaded = []
         failed = []

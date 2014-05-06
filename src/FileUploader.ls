@@ -38,7 +38,10 @@ module.exports = class FileUploader extends EventEmitter
 
     getTargetPath: (filepath) ->
         sansBasedir = filepath.slice @baseDirCharactersToStrip
-        @targetPrefix + "/" + sansBasedir
+        if @targetPrefix and @targetPrefix.length
+            @targetPrefix + "/" + sansBasedir
+        else
+            sansBasedir
 
 getFileToUpload = (originalPath, cb) ->
     options = {}
