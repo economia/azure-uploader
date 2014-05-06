@@ -7,7 +7,6 @@ test-script = (file) ->
     [srcOrTest, ...fileAddress] = file.split /[\\\/]/
     fileAddress .= join '/'
     <~ build-all
-    throw stderr if stderr
     cmd = "mocha --compilers ls:livescript -R tap --bail #__dirname/test/#fileAddress"
     (err, stdout, stderr) <~ exec cmd
     niceTestOutput stdout, stderr, cmd
@@ -37,7 +36,9 @@ task \test ->
     test-all!
 
 task \test-script ({currentfile}) ->
-    test-script file
+    currentfile .= replace "#__dirname" ""
+    currentfile .= slice 1 # remove leading /
+    test-script currentfile
 
 niceTestOutput = (test, stderr, cmd) ->
     lines         = test.split "\n"
